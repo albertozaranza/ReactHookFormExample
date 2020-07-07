@@ -6,27 +6,66 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import {Formik} from 'formik';
+import * as Yup from 'yup';
+
+const initialValues = {
+  email: '',
+  password: '',
+};
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('O e-email é inválido')
+    .required('O e-mail é necessário'),
+  password: Yup.string()
+    .min(6, 'A senha é muito curta')
+    .required('A senha é necessária'),
+});
 
 const App = () => {
   const passwordRef = useRef();
 
-  const {center, inputContainer, button, title} = styles;
+  const {center, inputContainer, button, title, error} = styles;
 
   return (
     <SafeAreaView style={center}>
       <Text style={title}>React Hook Form</Text>
-      <Text>E-mail:</Text>
-      <TextInput
-        style={inputContainer}
-        keyboardType="email-address"
-        onSubmitEditing={() => passwordRef.current.focus()}
-        returnKeyType="next"
-      />
-      <Text>Senha:</Text>
-      <TextInput style={inputContainer} secureTextEntry ref={passwordRef} />
-      <TouchableOpacity style={button} onPress={() => {}}>
-        <Text>Entrar</Text>
-      </TouchableOpacity>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={({email, password}) => alert(`${email} ${password}`)}>
+        {({values, errors, touched, handleChange, handleSubmit}) => (
+          <>
+            <Text>E-mail:</Text>
+            <TextInput
+              style={inputContainer}
+              keyboardType="email-address"
+              onSubmitEditing={() => passwordRef.current.focus()}
+              returnKeyType="next"
+              value={values.email}
+              onChangeText={handleChange('email')}
+            />
+            {errors.email && touched.email && (
+              <Text style={error}>{errors.email}</Text>
+            )}
+            <Text>Senha:</Text>
+            <TextInput
+              style={inputContainer}
+              secureTextEntry
+              ref={passwordRef}
+              value={values.password}
+              onChangeText={handleChange('password')}
+            />
+            {errors.password && touched.password && (
+              <Text style={error}>{errors.password}</Text>
+            )}
+            <TouchableOpacity style={button} onPress={handleSubmit}>
+              <Text>Entrar</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </Formik>
     </SafeAreaView>
   );
 };
@@ -58,6 +97,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderRadius: 8,
     backgroundColor: '#ccc',
+  },
+  error: {
+    color: '#dc3545',
+    marginBottom: 8,
   },
 });
 
